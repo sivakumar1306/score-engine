@@ -4,6 +4,23 @@ export type Profile = {
   game_id: string | null;
   kart_url: string | null;
   created_at: string;
+} & Partial<GameProfile>;
+
+/** In-game Smash Karts profile, read from a profile screenshot */
+export type GameProfile = {
+  sk_name: string | null;
+  sk_id: string | null;
+  sk_level: number | null;
+  sk_xp: string | null;
+  sk_region: string | null;
+  sk_kills: number | null;
+  sk_revenge_kills: number | null;
+  sk_bot_kills: number | null;
+  sk_deaths: number | null;
+  sk_kdr: number | null;
+  sk_wins: number | null;
+  sk_games: number | null;
+  sk_updated_at: string | null;
 };
 
 export type PlayerStats = Profile & {

@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { KartAvatar } from "@/components/KartAvatar";
 import { KartUploader } from "@/components/KartUploader";
+import { GameProfileImport } from "@/components/GameProfileImport";
+import { GameProfileCard } from "@/components/GameProfileCard";
 import { Button, Card, Field, PageHeader, Skeleton } from "@/components/ui";
 import { useToast } from "@/components/Toast";
 import { getSupabase } from "@/lib/supabase/client";
@@ -66,8 +68,16 @@ export default function SettingsPage() {
     <div className="mx-auto max-w-3xl">
       <PageHeader eyebrow="Settings" title="Your racer profile" />
       <div className="grid gap-5">
+        <Card className="p-6" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+          <h2 className="mb-1 font-display text-lg font-semibold">Smash Karts profile</h2>
+          <p className="mb-5 text-sm text-muted">Upload the in-game profile screen to sync your stats, SKID and kart. Do it again any time to refresh.</p>
+          {profile.sk_updated_at && <div className="mb-5"><GameProfileCard p={profile} /></div>}
+          <GameProfileImport userId={user.id} currentGameId={profile.game_id} onSaved={async () => { await refreshProfile(); toast("Smash Karts profile synced"); }} />
+        </Card>
+
         <Card className="p-6" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-          <h2 className="mb-5 font-display text-lg font-semibold">Kart</h2>
+          <h2 className="mb-1 font-display text-lg font-semibold">Kart</h2>
+          <p className="mb-5 text-sm text-muted">Or upload just a picture of your kart.</p>
           <div className="grid gap-6 sm:grid-cols-[180px_1fr]">
             <div className="checker grid aspect-square place-items-center rounded-2xl border border-line">
               <KartAvatar url={profile.kart_url} name={profile.username} size={140} glow="rgb(255 61 113 / 0.4)" />

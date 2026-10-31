@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ImagePlus, RefreshCw, ScanSearch, Sparkles, Wand2 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cropToBox, fileToDataUrl } from "@/lib/image";
-import { getSupabase } from "@/lib/supabase/client";
+import { removeBg, saveKart } from "@/lib/kart";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui";
 
@@ -43,18 +43,9 @@ export function KartUploader({ userId, onSaved, compact }: { userId: string; onS
       const crop = await cropToBox(dataUrl, json.box);
       setCropped(crop);
       setStage("removing");
-      try {
-        const { removeBackground } = await import("@imgly/background-removal");
-        const out = await removeBackground(crop, {
-          model: "isnet_quint8",
-          output: { format: "image/png" },
-          progress: (_key: string, cur: number, total: number) => total && setProgress(Math.round((cur / total) * 100)),
-        });
-        setCutout(out);
-        setUseCutout(true);
-      } catch {
-        setUseCutout(false); // keep the crop if background removal can't run on this device
-      }
+      const out = await removeBg(crop, setProgress);
+      setCutout(out);
+      setUseCutout(!!out);
       setStage("ready");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");
@@ -77,14 +68,7 @@ export function KartUploader({ userId, onSaved, compact }: { userId: string; onS
     setSaving(true);
     setError(null);
     try {
-      const sb = getSupabase();
-      const ext = result.type === "image/png" ? "png" : "jpg";
-      const path = `${userId}/kart-${Date.now()}.${ext}`;
-      const { error: upErr } = await sb.storage.from("karts").upload(path, result, { contentType: result.type, upsert: true });
-      if (upErr) throw upErr;
-      const url = sb.storage.from("karts").getPublicUrl(path).data.publicUrl;
-      const { error: dbErr } = await sb.from("profiles").update({ kart_url: url }).eq("id", userId);
-      if (dbErr) throw dbErr;
+      const url = await saveKart(userId, result);
       onSaved(url);
       reset();
     } catch (e) {

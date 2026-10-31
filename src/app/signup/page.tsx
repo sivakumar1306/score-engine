@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AuthShell } from "@/components/AuthShell";
 import { KartUploader } from "@/components/KartUploader";
-import { Button, Field, LinkButton } from "@/components/ui";
+import { GameProfileImport } from "@/components/GameProfileImport";
+import { Button, Field, LinkButton, Segmented } from "@/components/ui";
 import { useAuth } from "@/components/AuthProvider";
 import { useToast } from "@/components/Toast";
 import { getSupabase } from "@/lib/supabase/client";
@@ -23,6 +24,7 @@ export default function SignupPage() {
   const [form, setForm] = useState({ username: "", game_id: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [kartMode, setKartMode] = useState<"profile" | "kart">("profile");
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
@@ -65,7 +67,7 @@ export default function SignupPage() {
   return (
     <AuthShell
       title={step === "kart" ? "Show off your kart" : step === "confirm" ? "Check your inbox" : "Join the grid"}
-      subtitle={step === "kart" ? "Upload a screenshot of your kart. You can change it later in Settings." : step === "account" ? "Create your racer profile." : undefined}
+      subtitle={step === "kart" ? "Upload your in-game profile screen — AI grabs your stats, SKID and kart. You can update it later in Settings." : step === "account" ? "Create your racer profile." : undefined}
       footer={step === "account" ? <>Already racing? <Link href="/login" className="font-semibold text-hot hover:underline">Log in</Link></> : null}
     >
       {step !== "confirm" && (
@@ -110,14 +112,35 @@ export default function SignupPage() {
 
         {step === "kart" && userId && (
           <motion.div key="k" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
-            <KartUploader
-              userId={userId}
-              onSaved={async () => {
-                await refreshProfile();
-                toast("Kart saved — welcome to the grid!");
-                router.push("/");
-              }}
+            <Segmented
+              id="kmode"
+              value={kartMode}
+              onChange={setKartMode}
+              options={[
+                { value: "profile", label: "Profile screenshot" },
+                { value: "kart", label: "Kart only" },
+              ]}
             />
+            {kartMode === "profile" ? (
+              <GameProfileImport
+                userId={userId}
+                currentGameId={form.game_id.trim() || null}
+                onSaved={async () => {
+                  await refreshProfile();
+                  toast("Profile synced — welcome to the grid!");
+                  router.push("/");
+                }}
+              />
+            ) : (
+              <KartUploader
+                userId={userId}
+                onSaved={async () => {
+                  await refreshProfile();
+                  toast("Kart saved — welcome to the grid!");
+                  router.push("/");
+                }}
+              />
+            )}
             <button type="button" onClick={() => router.push("/")} className="w-full cursor-pointer text-center text-sm text-muted hover:text-ink">
               Skip for now
             </button>

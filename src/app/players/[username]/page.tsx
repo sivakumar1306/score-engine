@@ -5,6 +5,7 @@ import Link from "next/link";
 import { use, useEffect, useState } from "react";
 import { CountUp } from "@/components/CountUp";
 import { KartAvatar } from "@/components/KartAvatar";
+import { GameProfileCard } from "@/components/GameProfileCard";
 import { Badge, EmptyState, LinkButton, Skeleton } from "@/components/ui";
 import { getSupabase } from "@/lib/supabase/client";
 import type { PlayerStats } from "@/lib/types";
@@ -73,6 +74,10 @@ export default function PlayerPage({ params }: { params: Promise<{ username: str
         </div>
       </motion.section>
 
+      <GameProfileCard p={p} />
+
+      <div>
+      <h2 className="mb-4 font-display text-xl font-bold">Tournament stats</h2>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {stats.map((s, i) => (
           <motion.div key={s.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + i * 0.06 }} className="glass rounded-2xl p-4">
@@ -81,6 +86,7 @@ export default function PlayerPage({ params }: { params: Promise<{ username: str
             <div className="text-xs text-muted">{s.label}</div>
           </motion.div>
         ))}
+      </div>
       </div>
 
       <section>
