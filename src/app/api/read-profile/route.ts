@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSupabase } from "@/lib/supabase/server";
 import { geminiJSON, parseDataUrl } from "@/lib/gemini";
+import { getAdminSupabase } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -75,6 +76,18 @@ If a field is not visible, return null. If this is not a Smash Karts profile scr
       skid: str(data.skid)?.replace(/^SKID:\s*/i, "") ?? null,
       kart_box: validBox ? (box as [number, number, number, number]) : null,
     };
+
+    // Save straight from the AI reading — players can't edit these values.
+    const { data: me } = await supabase.from("profiles").select("game_id").eq("id", auth.user.id).single();
+    const update: Record<string, unknown> = {
+      sk_name: out.name, sk_id: out.skid, sk_level: out.level, sk_xp: out.xp, sk_region: out.region,
+      sk_kills: out.kills, sk_revenge_kills: out.revenge_kills, sk_bot_kills: out.bot_kills, sk_deaths: out.deaths,
+      sk_kdr: out.kdr, sk_wins: out.wins, sk_games: out.games, sk_updated_at: new Date().toISOString(),
+    };
+    if (!me?.game_id && out.name) update.game_id = out.name;
+    const { error: saveErr } = await getAdminSupabase().from("profiles").update(update).eq("id", auth.user.id);
+    if (saveErr) throw new Error(saveErr.message);
+
     return NextResponse.json(out);
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : "AI failed" }, { status: 502 });

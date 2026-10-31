@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from "react";
 import type { ReadProfileResult } from "@/app/api/read-profile/route";
 import { cropToBox, fileToDataUrl } from "@/lib/image";
 import { removeBg, saveKart } from "@/lib/kart";
-import { getSupabase } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui";
 
@@ -31,7 +30,7 @@ const FIELDS: { key: keyof Fields; label: string; type: "text" | "int" | "dec"; 
  * Upload the Smash Karts profile screen → AI reads stats + SKID and crops the kart.
  * The player reviews everything, then it's saved to their profile.
  */
-export function GameProfileImport({ userId, currentGameId, onSaved }: { userId: string; currentGameId?: string | null; onSaved: () => void }) {
+export function GameProfileImport({ userId, onSaved }: { userId: string; currentGameId?: string | null; onSaved: () => void }) {
   const [stage, setStage] = useState<Stage>("idle");
   const [shot, setShot] = useState<string | null>(null);
   const [fields, setFields] = useState<Fields | null>(null);
@@ -79,14 +78,6 @@ export function GameProfileImport({ userId, currentGameId, onSaved }: { userId: 
     setError(null);
     try {
       if (useKart && kart) await saveKart(userId, kart);
-      const update: Record<string, unknown> = {
-        sk_name: fields.name, sk_id: fields.skid, sk_level: fields.level, sk_xp: fields.xp, sk_region: fields.region,
-        sk_kills: fields.kills, sk_revenge_kills: fields.revenge_kills, sk_bot_kills: fields.bot_kills, sk_deaths: fields.deaths,
-        sk_kdr: fields.kdr, sk_wins: fields.wins, sk_games: fields.games, sk_updated_at: new Date().toISOString(),
-      };
-      if (!currentGameId && fields.name) update.game_id = fields.name;
-      const { error } = await getSupabase().from("profiles").update(update).eq("id", userId);
-      if (error) throw error;
       onSaved();
       reset();
     } catch (e) {
@@ -103,9 +94,6 @@ export function GameProfileImport({ userId, currentGameId, onSaved }: { userId: 
     setKart(null);
     setError(null);
   };
-
-  const set = (key: keyof Fields, type: string, raw: string) =>
-    setFields((f) => f && { ...f, [key]: type === "text" ? raw || null : raw === "" ? null : type === "int" ? parseInt(raw) || 0 : parseFloat(raw) || 0 });
 
   const busy = stage === "reading" || stage === "kart";
 
@@ -162,17 +150,14 @@ export function GameProfileImport({ userId, currentGameId, onSaved }: { userId: 
                   )}
                 </div>
                 <div>
-                  <p className="mb-3 text-xs text-muted">Check the values — fix anything the AI misread.</p>
+                  <p className="mb-3 text-xs text-muted">Read by AI from your screenshot and saved to your profile. If something is wrong, upload a clearer screenshot.</p>
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                     {FIELDS.map((f, i) => (
                       <motion.label key={f.key} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.025 }} className={cn("block", f.wide && "col-span-2")}>
                         <span className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-muted">{f.label}</span>
-                        <input
-                          className={cn("input py-2 text-sm", f.key === "skid" && "font-mono text-xs")}
-                          inputMode={f.type === "text" ? undefined : "decimal"}
-                          value={fields[f.key] ?? ""}
-                          onChange={(e) => set(f.key, f.type, e.target.value)}
-                        />
+                        <div className={cn("input truncate py-2 text-sm", f.key === "skid" && "font-mono text-xs", fields[f.key] == null && "text-muted")}>
+                          {fields[f.key] ?? "—"}
+                        </div>
                       </motion.label>
                     ))}
                   </div>
@@ -184,7 +169,7 @@ export function GameProfileImport({ userId, currentGameId, onSaved }: { userId: 
 
             <div className="flex flex-wrap gap-2">
               <Button type="button" variant="outline" onClick={() => input.current?.click()} disabled={busy || saving}><RefreshCw className="size-4" /> Another screenshot</Button>
-              {stage === "review" && <Button type="button" onClick={save} loading={saving}><Check className="size-4" /> Save to my profile</Button>}
+              {stage === "review" && <Button type="button" onClick={save} loading={saving}><Check className="size-4" /> Done</Button>}
               <Button type="button" variant="ghost" onClick={reset} disabled={busy || saving}>Cancel</Button>
             </div>
           </motion.div>
