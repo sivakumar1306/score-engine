@@ -35,7 +35,7 @@ export default function HomePage() {
   return (
     <div className="space-y-16 overflow-x-clip">
       {/* Hero */}
-      <section className="relative text-center">
+      <section className="relative pb-20 text-center">
         <HeroFX kartUrl={players?.[0]?.kart_url} />
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-line bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium text-muted">
           <span className="relative flex size-2">

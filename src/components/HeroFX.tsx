@@ -56,7 +56,7 @@ export function HeroFX({ kartUrl }: { kartUrl?: string | null }) {
           />
         ))}
       {mounted && (
-        <div className="absolute bottom-[8%] left-0 w-full" style={{ animation: "kartdrive 9s cubic-bezier(.45,.05,.55,.95) 1.2s infinite" }}>
+        <div className="absolute bottom-[4.5rem] left-0 w-full" style={{ animation: "kartdrive 9s cubic-bezier(.45,.05,.55,.95) 1.2s infinite" }}>
           <div className="relative w-24 sm:w-32">
             <div className="absolute right-full top-1/2 h-3 w-40 -translate-y-1/2 rounded-full bg-gradient-to-l from-hot/60 via-amber/30 to-transparent blur-sm" />
             {kartUrl ? (
