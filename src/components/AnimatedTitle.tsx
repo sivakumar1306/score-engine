@@ -6,7 +6,7 @@ export function AnimatedTitle() {
   const words = ["Smash.", "Drift.", "Dominate."];
   let n = 0;
   return (
-    <h1 className="font-display text-5xl font-bold leading-[1.02] tracking-tight sm:text-7xl" aria-label={words.join(" ")}>
+    <h1 className="font-display text-5xl font-bold leading-[1.02] tracking-tight sm:text-7xl lg:text-8xl xl:text-9xl" aria-label={words.join(" ")}>
       {words.map((w, wi) => (
         <span key={w} className="mr-[0.25em] inline-block whitespace-nowrap last:mr-0">
           {w.split("").map((ch) => {

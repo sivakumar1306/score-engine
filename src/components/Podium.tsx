@@ -9,9 +9,9 @@ import { KartAvatar } from "./KartAvatar";
 import { Confetti } from "./Confetti";
 
 const RANKS = {
-  1: { color: "var(--color-gold)", glow: "rgb(255 213 74 / 0.55)", height: "h-40 sm:h-44", label: "1ST" },
-  2: { color: "var(--color-silver)", glow: "rgb(207 214 230 / 0.45)", height: "h-28 sm:h-32", label: "2ND" },
-  3: { color: "var(--color-bronze)", glow: "rgb(224 138 79 / 0.5)", height: "h-20 sm:h-24", label: "3RD" },
+  1: { color: "var(--color-gold)", glow: "rgb(255 213 74 / 0.55)", height: "h-40 sm:h-56", label: "1ST" },
+  2: { color: "var(--color-silver)", glow: "rgb(207 214 230 / 0.45)", height: "h-28 sm:h-40", label: "2ND" },
+  3: { color: "var(--color-bronze)", glow: "rgb(224 138 79 / 0.5)", height: "h-20 sm:h-28", label: "3RD" },
 } as const;
 
 export function Podium({ top }: { top: PlayerStats[] }) {
@@ -67,7 +67,7 @@ function PodiumSlot({ player, rank, delay }: { player?: PlayerStats; rank: 1 | 2
               <KartAvatar
                 url={player.kart_url}
                 name={player.username}
-                size={rank === 1 ? 128 : 96}
+                size={rank === 1 ? 180 : 132}
                 glow={r.glow}
                 className="transition-transform duration-300 group-hover:scale-110 max-sm:!size-[72px]"
               />

@@ -50,7 +50,7 @@ export function Navbar() {
 
   return (
     <header className={cn("sticky top-0 z-50 transition-all duration-300", scrolled ? "border-b border-line bg-bg/70 backdrop-blur-xl" : "border-b border-transparent")}>
-      <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
+      <nav className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-8">
         <div className="hidden flex-1 md:block" />
 
         <div className="hidden items-center gap-1 md:flex">

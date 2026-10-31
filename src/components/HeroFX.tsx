@@ -8,7 +8,7 @@ export function HeroFX({ kartUrl }: { kartUrl?: string | null }) {
   const my = useMotionValue(40);
   const sx = useSpring(mx, { stiffness: 80, damping: 20 });
   const sy = useSpring(my, { stiffness: 80, damping: 20 });
-  const bg = useMotionTemplate`radial-gradient(600px circle at ${sx}% ${sy}%, rgb(255 61 113 / 0.16), transparent 60%)`;
+  const bg = useMotionTemplate`radial-gradient(900px circle at ${sx}% ${sy}%, rgb(255 61 113 / 0.16), transparent 60%)`;
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -22,16 +22,16 @@ export function HeroFX({ kartUrl }: { kartUrl?: string | null }) {
   }, [mx, my]);
 
   const lines = useMemo(
-    () => Array.from({ length: 14 }, (_, i) => ({ top: 8 + ((i * 53) % 84), w: 80 + ((i * 37) % 220), d: 1.1 + ((i * 7) % 10) / 6, delay: (i * 0.37) % 3, hot: i % 3 === 0 })),
+    () => Array.from({ length: 22 }, (_, i) => ({ top: 8 + ((i * 53) % 84), w: 80 + ((i * 37) % 220), d: 1.1 + ((i * 7) % 10) / 6, delay: (i * 0.37) % 3, hot: i % 3 === 0 })),
     [],
   );
   const sparks = useMemo(
-    () => Array.from({ length: 22 }, (_, i) => ({ left: (i * 41) % 100, size: 2 + (i % 3), d: 5 + (i % 6), delay: (i * 0.53) % 6, c: ["#ff3d71", "#ffb800", "#3dc9ff"][i % 3] })),
+    () => Array.from({ length: 40 }, (_, i) => ({ left: (i * 41) % 100, size: 2 + (i % 3), d: 5 + (i % 6), delay: (i * 0.53) % 6, c: ["#ff3d71", "#ffb800", "#3dc9ff"][i % 3] })),
     [],
   );
 
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-x-[-50vw] inset-y-[-6rem] -z-10 overflow-hidden [mask-image:linear-gradient(to_bottom,black_70%,transparent)]">
+    <div aria-hidden className="pointer-events-none absolute left-1/2 top-[-6rem] bottom-0 -z-10 w-screen -translate-x-1/2 overflow-hidden [mask-image:linear-gradient(to_bottom,black_75%,transparent)]">
       <motion.div className="absolute inset-0" style={{ background: bg }} />
       {mounted &&
         lines.map((l, i) => (

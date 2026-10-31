@@ -27,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AuthProvider>
             <ConfigBanner />
             <Navbar />
-            <main className="mx-auto w-full max-w-6xl px-4 pb-24 pt-8 sm:pt-12">{children}</main>
+            <main className="mx-auto w-full max-w-[1440px] px-4 pb-24 pt-8 sm:px-8 sm:pt-12">{children}</main>
             <Footer />
           </AuthProvider>
         </ToastProvider>
