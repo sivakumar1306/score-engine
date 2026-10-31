@@ -6,6 +6,7 @@ import type { PlayerStats } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { CountUp } from "./CountUp";
 import { KartAvatar } from "./KartAvatar";
+import { Confetti } from "./Confetti";
 
 const RANKS = {
   1: { color: "var(--color-gold)", glow: "rgb(255 213 74 / 0.55)", height: "h-40 sm:h-44", label: "1ST" },
@@ -54,6 +55,7 @@ function PodiumSlot({ player, rank, delay }: { player?: PlayerStats; rank: 1 | 2
         }}
         className="relative mb-3 flex w-full flex-col items-center"
       >
+        {rank === 1 && player && <Confetti delay={delay + 1.1} />}
         {rank === 1 && (
           <motion.div initial={{ y: -10, opacity: 0, rotate: -20 }} animate={{ y: 0, opacity: 1, rotate: 0 }} transition={{ delay: 1, type: "spring" }} className="mb-1">
             <Crown className="size-7 fill-gold text-gold drop-shadow-[0_0_12px_rgb(255_213_74/0.8)] sm:size-9" />

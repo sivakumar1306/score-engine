@@ -6,6 +6,9 @@ import { useAuth } from "@/components/AuthProvider";
 import { CountUp } from "@/components/CountUp";
 import { LeaderboardTable } from "@/components/LeaderboardTable";
 import { Podium } from "@/components/Podium";
+import { AnimatedTitle } from "@/components/AnimatedTitle";
+import { HeroFX } from "@/components/HeroFX";
+import { Ticker } from "@/components/Ticker";
 import { EmptyState, LinkButton, Skeleton } from "@/components/ui";
 import { usePlayerStats } from "@/hooks/usePlayerStats";
 
@@ -30,9 +33,10 @@ export default function HomePage() {
   }, [players, q]);
 
   return (
-    <div className="space-y-16">
+    <div className="space-y-16 overflow-x-clip">
       {/* Hero */}
       <section className="relative text-center">
+        <HeroFX kartUrl={players?.[0]?.kart_url} />
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="mx-auto mb-5 inline-flex items-center gap-2 rounded-full border border-line bg-white/[0.04] px-3.5 py-1.5 text-xs font-medium text-muted">
           <span className="relative flex size-2">
             <span className="absolute inline-flex size-full animate-ping rounded-full bg-lime opacity-75" />
@@ -40,14 +44,7 @@ export default function HomePage() {
           </span>
           Live leaderboard
         </motion.div>
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="font-display text-4xl font-bold leading-[1.05] tracking-tight sm:text-6xl"
-        >
-          Smash. Drift. <span className="text-gradient">Dominate.</span>
-        </motion.h1>
+        <AnimatedTitle />
         <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.6 }} className="mx-auto mt-4 max-w-xl text-muted sm:text-lg">
           Host Smash Karts tournaments, drop a screenshot after each match and let AI update the scores. Every kill counts toward the all-time board.
         </motion.p>
@@ -72,14 +69,16 @@ export default function HomePage() {
             { icon: Crosshair, label: "Total kills", value: totals.kills },
             { icon: Swords, label: "Player matches", value: totals.matches },
           ].map((s) => (
-            <div key={s.label} className="glass rounded-2xl px-3 py-4">
+            <motion.div key={s.label} whileHover={{ y: -4, scale: 1.03 }} transition={{ type: "spring", stiffness: 400, damping: 20 }} className="glass glow-border rounded-2xl px-3 py-4">
               <s.icon className="mx-auto mb-1.5 size-4 text-hot" />
               <div className="font-display text-2xl font-bold sm:text-3xl">{players ? <CountUp value={s.value} /> : "—"}</div>
               <div className="text-xs text-muted">{s.label}</div>
-            </div>
+            </motion.div>
           ))}
         </motion.div>
       </section>
+
+      {players && players.length > 1 && <Ticker players={players} />}
 
       {error && <div className="glass rounded-xl p-4 text-sm text-hot">Couldn&apos;t load the leaderboard: {error}</div>}
 

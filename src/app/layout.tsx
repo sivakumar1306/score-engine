@@ -6,6 +6,7 @@ import { Background } from "@/components/Background";
 import { Navbar } from "@/components/Navbar";
 import { ToastProvider } from "@/components/Toast";
 import { ConfigBanner } from "@/components/ConfigBanner";
+import { Footer } from "@/components/Footer";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const chakra = Chakra_Petch({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-chakra" });
@@ -27,9 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <ConfigBanner />
             <Navbar />
             <main className="mx-auto w-full max-w-6xl px-4 pb-24 pt-8 sm:pt-12">{children}</main>
-            <footer className="border-t border-line py-8 text-center text-xs text-muted">
-              Score Engine — an unofficial community tournament tracker. Not affiliated with Smash Karts.
-            </footer>
+            <Footer />
           </AuthProvider>
         </ToastProvider>
       </body>

@@ -1,6 +1,6 @@
 "use client";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown, LogOut, Menu, Plus, Settings, Trophy, X, Zap } from "lucide-react";
+import { ChevronDown, LogOut, Menu, Plus, Settings, Trophy, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -51,17 +51,7 @@ export function Navbar() {
   return (
     <header className={cn("sticky top-0 z-50 transition-all duration-300", scrolled ? "border-b border-line bg-bg/70 backdrop-blur-xl" : "border-b border-transparent")}>
       <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
-        <Link href="/" className="group flex items-center gap-2.5">
-          <motion.div
-            whileHover={{ rotate: -12, scale: 1.08 }}
-            className="grid size-9 place-items-center rounded-xl bg-[linear-gradient(135deg,var(--color-hot),var(--color-amber))] shadow-[0_6px_24px_-6px_rgb(255_61_113/0.8)]"
-          >
-            <Zap className="size-5 fill-white text-white" />
-          </motion.div>
-          <span className="font-display text-lg font-bold tracking-tight">
-            Score<span className="text-gradient">Engine</span>
-          </span>
-        </Link>
+        <div className="hidden flex-1 md:block" />
 
         <div className="hidden items-center gap-1 md:flex">
           {links.map((l) => (
@@ -72,7 +62,7 @@ export function Navbar() {
           ))}
         </div>
 
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden flex-1 items-center justify-end gap-2 md:flex">
           {loading ? (
             <div className="skeleton h-9 w-28" />
           ) : user ? (
@@ -113,6 +103,7 @@ export function Navbar() {
           )}
         </div>
 
+        <div className="md:hidden" />
         <button className="grid size-10 cursor-pointer place-items-center rounded-xl border border-line md:hidden" onClick={() => setMobile((m) => !m)} aria-label="Menu">
           {mobile ? <X className="size-5" /> : <Menu className="size-5" />}
         </button>
