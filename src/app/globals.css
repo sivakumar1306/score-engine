@@ -1,0 +1,129 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #07070c;
+  --color-surface: #0f0f18;
+  --color-surface-2: #161624;
+  --color-line: rgb(255 255 255 / 0.08);
+  --color-ink: #eeedf7;
+  --color-muted: #8d8ca6;
+  --color-hot: #ff3d71;
+  --color-amber: #ffb800;
+  --color-cyan: #3dc9ff;
+  --color-lime: #7cff6b;
+  --color-gold: #ffd54a;
+  --color-silver: #cfd6e6;
+  --color-bronze: #e08a4f;
+  --font-display: var(--font-chakra), ui-sans-serif, system-ui;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  background: var(--color-bg);
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100dvh;
+}
+
+::selection {
+  background: rgb(255 61 113 / 0.35);
+}
+
+@layer components {
+  .glass {
+    background: linear-gradient(180deg, rgb(255 255 255 / 0.055), rgb(255 255 255 / 0.02));
+    border: 1px solid var(--color-line);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  .text-gradient {
+    background: linear-gradient(92deg, var(--color-hot), var(--color-amber));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .ring-glow {
+    box-shadow: 0 0 0 1px rgb(255 61 113 / 0.35), 0 10px 40px -10px rgb(255 61 113 / 0.55);
+  }
+  .input {
+    width: 100%;
+    border-radius: 0.8rem;
+    background: rgb(255 255 255 / 0.04);
+    border: 1px solid var(--color-line);
+    padding: 0.7rem 0.95rem;
+    color: var(--color-ink);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  }
+  .input::placeholder {
+    color: rgb(141 140 166 / 0.7);
+  }
+  .input:focus {
+    border-color: rgb(255 61 113 / 0.6);
+    box-shadow: 0 0 0 4px rgb(255 61 113 / 0.12);
+    background: rgb(255 255 255 / 0.06);
+  }
+  .skeleton {
+    background: linear-gradient(90deg, rgb(255 255 255 / 0.04) 25%, rgb(255 255 255 / 0.09) 50%, rgb(255 255 255 / 0.04) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite linear;
+    border-radius: 0.75rem;
+  }
+}
+
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+@keyframes drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(6%, -4%, 0) scale(1.08); }
+  66% { transform: translate3d(-5%, 5%, 0) scale(0.95); }
+}
+
+@keyframes sweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-drift { animation: drift 22s ease-in-out infinite; }
+.animate-float { animation: float 4s ease-in-out infinite; }
+
+/* checkerboard used for transparent kart previews */
+.checker {
+  background-color: rgb(255 255 255 / 0.03);
+  background-image:
+    linear-gradient(45deg, rgb(255 255 255 / 0.05) 25%, transparent 25%),
+    linear-gradient(-45deg, rgb(255 255 255 / 0.05) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgb(255 255 255 / 0.05) 75%),
+    linear-gradient(-45deg, transparent 75%, rgb(255 255 255 / 0.05) 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: rgb(255 255 255 / 0.1); border-radius: 999px; border: 2px solid var(--color-bg); }
+::-webkit-scrollbar-track { background: transparent; }
