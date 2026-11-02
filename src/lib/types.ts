@@ -53,6 +53,7 @@ export type Match = {
   tournament_id: string;
   match_number: number;
   winner_team_id: string | null;
+  is_draw?: boolean;
   screenshot_url: string | null;
   entry_method: "manual" | "ai";
   played_at: string;

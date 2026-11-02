@@ -1,6 +1,6 @@
 "use client";
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertTriangle, Bot, Camera, Check, Crown, ImagePlus, Keyboard, Minus, Plus, Sparkles, X } from "lucide-react";
+import { AlertTriangle, Bot, Camera, Check, Crown, Handshake, ImagePlus, Keyboard, Minus, Plus, Sparkles, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { RosterPlayer, TournamentData } from "@/hooks/useTournament";
 import { fileToDataUrl, dataUrlToBlob } from "@/lib/image";
@@ -39,7 +39,7 @@ export function MatchResultModal({
     });
     return init;
   });
-  const [winner, setWinner] = useState<string | null>(existing?.winner_team_id ?? null);
+  const [winner, setWinner] = useState<string | null>(existing?.is_draw ? "draw" : existing?.winner_team_id ?? null);
   const [tab, setTab] = useState<"manual" | "ai">(canEdit && !existing ? "ai" : "manual");
   const [shot, setShot] = useState<string | null>(null); // new screenshot (data URL)
   const [analyzing, setAnalyzing] = useState(false);
@@ -108,7 +108,17 @@ export function MatchResultModal({
       if (r.player_id && next[r.player_id]) next[r.player_id] = { played: true, kills: r.kills, deaths: r.deaths ?? 0, ai: true };
     });
     setRows(next);
-    if (isTeam && ai.winner_team_id) setWinner(ai.winner_team_id);
+    if (isTeam) {
+      // equal team kills → suggest a draw, otherwise the AI's winner
+      const sums = new Map<string, number>();
+      ai.rows.forEach((r) => {
+        const tid = r.player_id ? roster.find((p) => p.id === r.player_id)?.team_id : null;
+        if (tid) sums.set(tid, (sums.get(tid) ?? 0) + r.kills);
+      });
+      const vals = teams.map((t) => sums.get(t.id) ?? 0);
+      const tied = vals.length > 1 && vals.filter((v) => v === Math.max(...vals)).length > 1;
+      setWinner(tied ? "draw" : ai.winner_team_id ?? null);
+    }
     setTab("manual");
   };
 
@@ -120,7 +130,7 @@ export function MatchResultModal({
     if (isTeam && !win) {
       const best = [...teamKills.entries()].sort((a, b) => b[1] - a[1]);
       if (best.length && (best.length === 1 || best[0][1] !== best[1][1])) win = best[0][0];
-      else return setError("Pick the winning team.");
+      else return setError("Teams are level — pick the winner or choose Draw.");
     }
     setSaving(true);
     try {
@@ -136,7 +146,7 @@ export function MatchResultModal({
       const { data: m, error: mErr } = await sb
         .from("matches")
         .upsert(
-          { tournament_id: tournament.id, match_number: matchNumber, winner_team_id: isTeam ? win : null, screenshot_url, entry_method: usedAi ? "ai" : "manual" },
+          { tournament_id: tournament.id, match_number: matchNumber, winner_team_id: isTeam && win !== "draw" ? win : null, is_draw: isTeam && win === "draw", screenshot_url, entry_method: usedAi ? "ai" : "manual" },
           { onConflict: "tournament_id,match_number" },
         )
         .select("id")
@@ -301,7 +311,7 @@ export function MatchResultModal({
 
                 {isTeam && (
                   <div>
-                    <div className="mb-2 text-sm font-medium">Winning team</div>
+                    <div className="mb-2 text-sm font-medium">Result</div>
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                       {teams.map((t) => (
                         <button
@@ -320,6 +330,19 @@ export function MatchResultModal({
                           <div className="mt-0.5 text-xs text-muted">{teamKills.get(t.id) ?? 0} kills</div>
                         </button>
                       ))}
+                      <button
+                        type="button"
+                        disabled={viewOnly}
+                        onClick={() => setWinner("draw")}
+                        className={cn("relative cursor-pointer overflow-hidden rounded-xl border px-3 py-3 text-left transition disabled:cursor-default", winner === "draw" ? "border-transparent bg-white/[0.1] ring-[1.5px] ring-silver" : "border-line bg-white/[0.03] hover:bg-white/[0.06]")}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Handshake className="size-4 text-silver" />
+                          <span className="font-semibold">Draw</span>
+                          {winner === "draw" && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="ml-auto"><Check className="size-4 text-silver" /></motion.span>}
+                        </div>
+                        <div className="mt-0.5 text-xs text-muted">Scores level</div>
+                      </button>
                     </div>
                   </div>
                 )}

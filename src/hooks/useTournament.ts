@@ -66,7 +66,7 @@ export function useTournament(id: string) {
 }
 
 export type SoloStanding = { player: RosterPlayer; kills: number; deaths: number; played: number; perMatch: Record<number, number | null> };
-export type TeamStanding = { team: Team; wins: number; kills: number; players: { player: RosterPlayer; kills: number }[] };
+export type TeamStanding = { team: Team; wins: number; draws: number; kills: number; players: { player: RosterPlayer; kills: number }[] };
 
 export function useStandings(d: TournamentData | null) {
   return useMemo(() => {
@@ -89,11 +89,12 @@ export function useStandings(d: TournamentData | null) {
       return {
         team: t,
         wins: d.matches.filter((m) => m.winner_team_id === t.id).length,
+        draws: d.matches.filter((m) => m.is_draw).length,
         kills: members.reduce((a, s) => a + s.kills, 0),
         players: members.map((s) => ({ player: s.player, kills: s.kills })),
       };
     });
-    teams.sort((a, b) => b.wins - a.wins || b.kills - a.kills);
+    teams.sort((a, b) => b.wins - a.wins || b.draws - a.draws || b.kills - a.kills);
     return { solo, teams };
   }, [d]);
 }

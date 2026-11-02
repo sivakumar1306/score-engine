@@ -1,6 +1,6 @@
 "use client";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bot, CheckCircle2, Crown, Crosshair, Image as ImageIcon, Lock, Pencil, Play, Plus, RotateCcw, Trash2, Trophy, User, Users } from "lucide-react";
+import { Bot, CheckCircle2, Handshake, Crown, Crosshair, Image as ImageIcon, Lock, Pencil, Play, Plus, RotateCcw, Trash2, Trophy, User, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { use, useState } from "react";
@@ -39,6 +39,13 @@ export default function TournamentPage({ params }: { params: Promise<{ id: strin
   const nextMatch = Array.from({ length: t.total_matches }, (_, i) => i + 1).find((n) => !data.matches.some((m) => m.match_number === n));
   const leader = t.type === "solo" ? standings.solo[0] : null;
   const leadTeam = t.type === "team" ? standings.teams[0] : null;
+  const tied =
+    t.type === "solo"
+      ? standings.solo.length > 1 && standings.solo[0].kills === standings.solo[1].kills
+      : standings.teams.length > 1 && standings.teams[0].wins === standings.teams[1].wins && standings.teams[0].draws === standings.teams[1].draws;
+  const tiedNames = t.type === "solo"
+    ? standings.solo.filter((s) => s.kills === standings.solo[0]?.kills).map((s) => s.player.username)
+    : standings.teams.filter((s) => s.wins === standings.teams[0]?.wins && s.draws === standings.teams[0]?.draws).map((s) => s.team.name);
 
   const setStatus = async (status: "upcoming" | "live" | "completed") => {
     setBusy(true);
@@ -114,10 +121,10 @@ export default function TournamentPage({ params }: { params: Promise<{ id: strin
             )}
             <div>
               <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.2em] text-gold">
-                <Crown className="size-4 fill-gold" /> {t.status === "completed" ? "Champion" : "Leading"}
+                <Crown className="size-4 fill-gold" /> {tied ? (t.status === "completed" ? "Tied for the win" : "Tied") : t.status === "completed" ? "Champion" : "Leading"}
               </div>
-              <div className="font-display text-2xl font-bold">{leader ? leader.player.username : leadTeam!.team.name}</div>
-              <div className="text-sm text-muted">{leader ? `${leader.kills} kills` : `${leadTeam!.wins} wins · ${leadTeam!.kills} kills`}</div>
+              <div className="font-display text-2xl font-bold">{tied ? tiedNames.join(" & ") : leader ? leader.player.username : leadTeam!.team.name}</div>
+              <div className="text-sm text-muted">{leader ? `${leader.kills} kills` : `${leadTeam!.wins} wins${leadTeam!.draws ? ` · ${leadTeam!.draws} draws` : ""}${tied ? "" : ` · ${leadTeam!.kills} kills`}`}</div>
             </div>
           </div>
         </motion.section>
@@ -140,6 +147,7 @@ export default function TournamentPage({ params }: { params: Promise<{ id: strin
               const top = results.sort((a, b) => b.kills - a.kills)[0];
               const topName = top ? data.roster.find((p) => p.id === top.player_id)?.username : null;
               const win = m?.winner_team_id ? data.teams.find((x) => x.id === m.winner_team_id) : null;
+              const draw = !!m?.is_draw;
               const clickable = !!m || isHost;
               return (
                 <motion.button
@@ -166,7 +174,9 @@ export default function TournamentPage({ params }: { params: Promise<{ id: strin
                   </div>
                   {m ? (
                     <div className="mt-2">
-                      {win ? (
+                      {draw ? (
+                        <div className="flex items-center gap-1.5 text-sm font-semibold text-silver"><Handshake className="size-3.5 shrink-0" /> Draw</div>
+                      ) : win ? (
                         <div className="flex items-center gap-1.5 truncate text-sm font-semibold"><Crown className="size-3.5 shrink-0 text-gold" /> <span className="truncate">{win.name}</span></div>
                       ) : (
                         <div className="truncate text-sm font-semibold">{topName ?? "—"}</div>
@@ -223,7 +233,10 @@ function SoloTable({ data, standings }: { data: TournamentData; standings: Retur
           {standings.map((s, i) => (
             <motion.tr key={s.player.id} layout initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }} className="border-b border-line/60 last:border-0 hover:bg-white/[0.03]">
               <td className="px-4 py-2.5">
-                <span className={cn("font-display text-base font-bold", i === 0 ? "text-gold" : i === 1 ? "text-silver" : i === 2 ? "text-bronze" : "text-muted")}>{i + 1}</span>
+                {(() => {
+                  const r = standings.findIndex((x) => x.kills === s.kills);
+                  return <span className={cn("font-display text-base font-bold", r === 0 ? "text-gold" : r === 1 ? "text-silver" : r === 2 ? "text-bronze" : "text-muted")}>{r + 1}{standings.filter((x) => x.kills === s.kills).length > 1 ? "=" : ""}</span>;
+                })()}
               </td>
               <td className="px-2 py-2.5">
                 <Link href={`/players/${encodeURIComponent(s.player.username)}`} className="flex items-center gap-2.5 hover:text-hot">
@@ -244,6 +257,7 @@ function SoloTable({ data, standings }: { data: TournamentData; standings: Retur
 }
 
 function TeamStandings({ standings }: { standings: ReturnType<typeof useStandings>["teams"] }) {
+  const tiedTop = standings.length > 1 && standings[0].wins === standings[1].wins && standings[0].draws === standings[1].draws;
   if (!standings.length) return <EmptyState icon={<Users className="size-6" />} title="No teams yet" />;
   return (
     <div className="space-y-3">
@@ -254,13 +268,13 @@ function TeamStandings({ standings }: { standings: ReturnType<typeof useStanding
             <span className={cn("font-display text-2xl font-bold", i === 0 ? "text-gold" : "text-muted")}>{i + 1}</span>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 font-display text-lg font-bold">
-                {s.team.name} {i === 0 && s.wins > 0 && <Trophy className="size-4 text-gold" />}
+                {s.team.name} {i === 0 && !tiedTop && s.wins > 0 && <Trophy className="size-4 text-gold" />}
               </div>
               <div className="text-xs text-muted">{s.kills} kills</div>
             </div>
             <div className="text-right">
               <div className="font-display text-3xl font-bold" style={{ color: s.team.color }}>{s.wins}</div>
-              <div className="text-xs text-muted">wins</div>
+              <div className="text-xs text-muted">wins{s.draws ? ` · ${s.draws}D` : ""}</div>
             </div>
           </div>
           <div className="mt-3 flex flex-wrap gap-1.5">
