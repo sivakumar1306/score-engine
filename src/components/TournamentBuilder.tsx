@@ -1,11 +1,12 @@
 "use client";
 import { AnimatePresence, motion } from "framer-motion";
-import { Minus, Plus, Search, Swords, Trash2, User, Users, X } from "lucide-react";
+import { Dices, Minus, Plus, Search, Swords, Trash2, User, Users, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { getSupabase } from "@/lib/supabase/client";
 import type { Profile, TournamentType } from "@/lib/types";
 import { cn, TEAM_COLORS } from "@/lib/utils";
 import { KartAvatar } from "./KartAvatar";
+import { SpinWheel } from "./SpinWheel";
 import { Button, Field, Segmented, Skeleton } from "./ui";
 
 export type DraftTeam = { key: string; id?: string; name: string; color: string; players: string[] };
@@ -41,6 +42,7 @@ export function TournamentBuilder({
   const [dragOver, setDragOver] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [roulette, setRoulette] = useState(false);
 
   useEffect(() => {
     getSupabase()
@@ -198,7 +200,17 @@ export function TournamentBuilder({
                 )}
               </motion.div>
             ) : (
-              <motion.div key="team" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="grid gap-4 md:grid-cols-2">
+              <motion.div key="team" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                <div className="glass mb-4 flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="text-sm">
+                    <div className="font-semibold">🎰 Team roulette</div>
+                    <div className="text-muted">Add everyone to any team, then spin the wheel to shuffle them into balanced teams.</div>
+                  </div>
+                  <Button type="button" variant="outline" onClick={() => setRoulette(true)} disabled={selected.size < 2}>
+                    <Dices className="size-4" /> Spin teams
+                  </Button>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
                 <AnimatePresence>
                   {v.teams.map((t) => (
                     <motion.div
@@ -263,11 +275,26 @@ export function TournamentBuilder({
                 >
                   <span className="flex items-center gap-2 font-semibold"><Plus className="size-5" /> Add team</span>
                 </motion.button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
       </div>
+
+      <AnimatePresence>
+        {roulette && (
+          <SpinWheel
+            players={[...selected].map((id) => byId.get(id)).filter((p): p is Profile => !!p)}
+            teams={v.teams}
+            onClose={() => setRoulette(false)}
+            onApply={(byTeam) => {
+              setV((s) => ({ ...s, teams: s.teams.map((t) => ({ ...t, players: byTeam[t.key] ?? [] })) }));
+              setRoulette(false);
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       {error && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl border border-hot/30 bg-hot/10 px-4 py-3 text-sm text-hot">{error}</motion.p>}
       <div className="flex justify-end">
