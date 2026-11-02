@@ -24,8 +24,8 @@ const schema = {
         type: "OBJECT",
         properties: {
           name: { type: "STRING", description: "player name exactly as shown" },
-          kills: { type: "INTEGER", description: "number in the column under the SKULL icon" },
-          deaths: { type: "INTEGER", nullable: true },
+          kills: { type: "INTEGER", description: "number in the column under the RIBBON/rosette icon" },
+          deaths: { type: "INTEGER", nullable: true, description: "number under the SKULL icon" },
           position: { type: "INTEGER", nullable: true, description: "rank on the scoreboard, 1 = top" },
           team_color: { type: "STRING", nullable: true, description: "team colour of this row, e.g. red or blue, if teams are shown" },
         },
@@ -63,14 +63,14 @@ export async function POST(req: Request) {
   const { data: teams } = await supabase.from("teams").select("id,name").eq("tournament_id", tournamentId);
 
   const prompt = `You are reading an end-of-match scoreboard screenshot from the online kart battle game "Smash Karts".
-Each row is one player: a small level badge (a number inside a star/blue badge — this is the player's LEVEL, ignore it), then the player name, then three number columns.
-The three columns are identified by the icons in the header row above them, left to right:
-  1. a crosshair/target inside a shield — NOT kills, ignore this column
-  2. a SKULL with crossed bones/wrenches — this is KILLS. Use this column for "kills".
-  3. a ribbon/medal rosette — this is the score/points, NOT kills
-Always take kills from the column directly under the skull icon. Never use the first or last column as kills, and never use the level badge number.
-Deaths are not shown on this screen — return null for deaths. Position = row order from the top (1 = top row).
-${t.type === "team" ? "This is a TEAM match. For each row give the team colour if rows are coloured by team (e.g. red / blue), and the colour of the winning team if shown." : "This is a SOLO (free-for-all) match."}
+Each row is one player: a small level badge (a number inside a star badge — this is the player's LEVEL, ignore it), then the player name, then number columns.
+The number columns are identified by the icons in the header row above them. There may be 2 or 3 columns:
+  - a RIBBON / MEDAL ROSETTE icon (usually the right-most column) — this is KILLS. Use this column for "kills".
+  - a SKULL with crossed bones/wrenches — this is DEATHS. Use this column for "deaths".
+  - a crosshair/target inside a shield (only on some screens) — ignore it.
+Always take kills from the column directly under the ribbon icon and deaths from under the skull icon. Never use the level badge number.
+Position = row order from the top (1 = top row).
+${t.type === "team" ? "This is a TEAM match. Rows are coloured by team (e.g. red / blue): give each row's team_color. For winning_team_color give the team with the higher total kills (ribbon column); if the totals are equal return 'draw'." : "This is a SOLO (free-for-all) match."}
 Registered players expected in this match (names on screen may be slightly different, truncated or stylised): ${players.map((p) => p.username + (p.game_id ? ` (in-game: ${p.game_id})` : "")).join(", ") || "unknown"}.
 Do not invent players. If the image is not a results screen, set is_results_screen to false and return an empty players list.`;
 
@@ -99,7 +99,7 @@ Do not invent players. If the image is not a results screen, set is_results_scre
     if (t.type === "team" && teams?.length) {
       const teamOf = new Map(players.map((p) => [p.id, p.team_id]));
       const color = data.winning_team_color?.toLowerCase().trim();
-      if (color) {
+      if (color && color !== "draw") {
         const votes = new Map<string, number>();
         rows.forEach((r) => {
           const tid = r.player_id ? teamOf.get(r.player_id) : null;
